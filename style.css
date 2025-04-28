@@ -26,16 +26,41 @@ body {
   height: 100vh;
 }
 
+/* Стили для джойстика */
+#joystick-zone {
+  position: fixed;
+  width: 200px;
+  height: 200px;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  border-radius: 50%;
+  pointer-events: auto;
+  z-index: 10;
+}
+
+/* Стили для улучшения внешнего вида nipplejs */
+.nipple {
+  opacity: 0.8 !important;
+}
+
+.nipple .back {
+  background-color: rgba(60, 60, 60, 0.5) !important;
+  border: 2px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.nipple .front {
+  box-shadow: 0 0 10px rgba(0, 102, 255, 0.8) !important;
+}
+
 .controls-info {
   position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: 1.5rem;
+  left: 1rem;
   background-color: rgba(0, 0, 0, 0.6);
   color: white;
   padding: 10px 15px;
   border-radius: 5px;
-  font-size: 16px;
+  font-size: 12px;
   pointer-events: none;
   text-align: center;
 }

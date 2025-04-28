@@ -32,8 +32,57 @@ export class SceneObjects {
     this.createCube();
     this.addLight();
 
-    // Добавляем одно препятствие на поле
-    this.addObstacle(2, -2);
+    // Добавляем несколько препятствий на поле вместо одного
+    this.createObstacles();
+  }
+
+  /**
+   * Создаёт набор препятствий на игровом поле
+   */
+  createObstacles() {
+    // Создаем несколько препятствий на заданных позициях
+    const obstacles = [
+      { x: 2, z: -2 },  // Первое препятствие
+      { x: -2, z: 2 },  // Второе препятствие
+      { x: -1, z: -1 }, // Третье препятствие
+      { x: 3, z: 1 },   // Четвертое препятствие
+      { x: 1, z: -3 }   // Пятое препятствие
+    ];
+
+    // Проверяем, чтобы препятствия не перекрывали начальную и целевую позиции
+    const safeObstacles = obstacles.filter(obs => {
+      // Проверка начальной позиции
+      if (Math.abs(obs.x - this.settings.initialPosition.x) < 0.1 &&
+          Math.abs(obs.z - this.settings.initialPosition.z) < 0.1) {
+        console.log(`Препятствие на (${obs.x}, ${obs.z}) перекрывает начальную позицию, пропускаем`);
+        return false;
+      }
+
+      // Проверка целевой позиции, если она определена
+      if (this.settings.winTarget &&
+          Math.abs(obs.x - this.settings.winTarget.x) < 0.1 &&
+          Math.abs(obs.z - this.settings.winTarget.z) < 0.1) {
+        console.log(`Препятствие на (${obs.x}, ${obs.z}) перекрывает целевую позицию, пропускаем`);
+        return false;
+      }
+
+      return true;
+    });
+
+    // Создаем препятствия на проверенных позициях
+    safeObstacles.forEach(obs => {
+      this.addObstacle(obs.x, obs.z);
+      console.log(`Добавлено препятствие на позиции (${obs.x}, ${obs.z})`);
+    });
+
+    // Если нужно дополнить до 5 препятствий, добавляем случайные
+    const additionalCount = 5 - safeObstacles.length;
+    if (additionalCount > 0) {
+      console.log(`Добавляем ещё ${additionalCount} случайных препятствий`);
+      for (let i = 0; i < additionalCount; i++) {
+        this.addRandomObstacle();
+      }
+    }
   }
 
   /**

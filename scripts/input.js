@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { JoystickController } from "./joystick.js";
 
 /**
  * Класс для обработки пользовательского ввода
@@ -18,6 +19,15 @@ export class InputManager {
       ArrowRight: { pressed: false, cooldown: false }
     };
 
+    // Добавляем контроллер джойстика
+    this.joystick = null;
+
+    // Отслеживаем текущее направление джойстика
+    this.joystickDirection = null;
+
+    // Флаг для проверки, готов ли куб к следующему движению
+    this.readyForNextMove = true;
+
     // Инициализация обработчиков событий
     this.init();
   }
@@ -26,6 +36,81 @@ export class InputManager {
     // Добавляем обработчики нажатия и отпускания клавиш
     document.addEventListener("keydown", this.handleKeyDown.bind(this));
     document.addEventListener("keyup", this.handleKeyUp.bind(this));
+
+    // Инициализируем джойстик
+    this.initJoystick();
+
+    // Добавляем обработчик события завершения перемещения кубика
+    document.addEventListener('cubeMovementComplete', this.handleCubeMovementComplete.bind(this));
+  }
+
+  /**
+   * Обработчик завершения перемещения кубика
+   */
+  handleCubeMovementComplete() {
+    this.readyForNextMove = true;
+
+    // Если есть активное направление джойстика, сразу инициируем следующее движение
+    if (this.joystickDirection) {
+      this.processJoystickDirection(this.joystickDirection);
+    }
+  }
+
+  /**
+   * Инициализация виртуального джойстика
+   */
+  initJoystick() {
+    // Создаем джойстик с настройками
+    this.joystick = new JoystickController({
+      zone: document.getElementById('joystick-zone'),
+      color: '#0066ff',
+      size: 120,
+      lockX: false,
+      lockY: false,
+      restJoystick: true
+    }).init();
+
+    // Устанавливаем обработчик направления движения
+    this.joystick.onDirection(direction => {
+      this.joystickDirection = direction;
+
+      // Обрабатываем направление джойстика только если куб готов к движению
+      if (this.readyForNextMove) {
+        this.processJoystickDirection(direction);
+      }
+    });
+
+    // Устанавливаем обработчик окончания управления джойстиком
+    this.joystick.onEnd(() => {
+      this.joystickDirection = null;
+    });
+  }
+
+  /**
+   * Обрабатывает направление джойстика и перемещает кубик
+   */
+  processJoystickDirection(direction) {
+    // Преобразуем направление джойстика в соответствующее направление кубика
+    let keyDirection;
+    switch (direction.angle) {
+      case 'up':
+        keyDirection = 'ArrowUp';
+        break;
+      case 'down':
+        keyDirection = 'ArrowDown';
+        break;
+      case 'left':
+        keyDirection = 'ArrowLeft';
+        break;
+      case 'right':
+        keyDirection = 'ArrowRight';
+        break;
+      default:
+        return;
+    }
+
+    // Перемещаем кубик в указанном направлении
+    this.moveCubeOnGrid(keyDirection);
   }
 
   // Обработчик нажатия клавиши
@@ -59,6 +144,9 @@ export class InputManager {
   // Метод перемещения кубика по сетке с анимацией переворачивания
   moveCubeOnGrid(direction) {
     if (this.animation.isMoving) return; // Если кубик уже движется, ничего не делаем
+
+    // Отмечаем, что куб не готов к следующему движению
+    this.readyForNextMove = false;
 
     const cube = this.objects.cube;
     const cubeBody = this.objects.cubeBody;
@@ -113,6 +201,7 @@ export class InputManager {
         this.animation.targetPosition.z < minBound - 0.01 ||
         this.animation.targetPosition.z > maxBound + 0.01) {
       console.log("Выход за пределы поля. Движение отменено.");
+      this.readyForNextMove = true; // Сбрасываем флаг, чтобы позволить другое движение
       return; // Выход за пределы поля
     }
 
@@ -132,6 +221,7 @@ export class InputManager {
     // Если это не победная клетка и не начальная позиция, проверяем свободна ли позиция
     if (!isWinTarget && !isInitialPosition && !this.objects.isPositionFree(targetX, targetZ)) {
       console.log("На пути препятствие. Движение отменено.");
+      this.readyForNextMove = true; // Сбрасываем флаг, чтобы позволить другое движение
       return; // Позиция занята препятствием
     }
 
@@ -164,5 +254,20 @@ export class InputManager {
       rotationAxis,
       pivotPoint
     );
+  }
+
+  /**
+   * Освобождение ресурсов при уничтожении
+   */
+  dispose() {
+    document.removeEventListener("keydown", this.handleKeyDown);
+    document.removeEventListener("keyup", this.handleKeyUp);
+    document.removeEventListener("cubeMovementComplete", this.handleCubeMovementComplete);
+
+    // Уничтожаем джойстик при необходимости
+    if (this.joystick) {
+      this.joystick.destroy();
+      this.joystick = null;
+    }
   }
 }
