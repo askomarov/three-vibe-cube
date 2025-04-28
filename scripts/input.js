@@ -116,6 +116,25 @@ export class InputManager {
       return; // Выход за пределы поля
     }
 
+    // Проверяем, не пытается ли кубик пройти сквозь препятствие
+    const targetX = Math.round(this.animation.targetPosition.x);
+    const targetZ = Math.round(this.animation.targetPosition.z);
+
+    // Проверяем, не является ли целевая позиция победной клеткой или начальной позицией
+    const isWinTarget = this.settings.winTarget &&
+      Math.abs(targetX - this.settings.winTarget.x) < 0.1 &&
+      Math.abs(targetZ - this.settings.winTarget.z) < 0.1;
+
+    const isInitialPosition =
+      Math.abs(targetX - this.settings.initialPosition.x) < 0.1 &&
+      Math.abs(targetZ - this.settings.initialPosition.z) < 0.1;
+
+    // Если это не победная клетка и не начальная позиция, проверяем свободна ли позиция
+    if (!isWinTarget && !isInitialPosition && !this.objects.isPositionFree(targetX, targetZ)) {
+      console.log("На пути препятствие. Движение отменено.");
+      return; // Позиция занята препятствием
+    }
+
     // Устанавливаем флаг движения
     this.animation.isMoving = true;
 

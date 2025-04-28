@@ -34,6 +34,38 @@ export class Game {
 
     // Запускаем инициализацию
     this.init();
+
+    // Инициализируем модальное окно
+    this.initModal();
+  }
+
+  // Метод инициализации модального окна и его обработчиков
+  initModal() {
+    // Получаем ссылки на DOM элементы
+    this.winModal = document.getElementById('win-modal');
+    this.restartButton = document.getElementById('restart-button');
+
+    // Добавляем обработчик на кнопку рестарта
+    if (this.restartButton) {
+      this.restartButton.addEventListener('click', () => {
+        this.hideWinModal();
+        this.resetGame();
+      });
+    }
+  }
+
+  // Метод для показа модального окна победы
+  showWinModal() {
+    if (this.winModal) {
+      this.winModal.style.display = 'flex';
+    }
+  }
+
+  // Метод для скрытия модального окна
+  hideWinModal() {
+    if (this.winModal) {
+      this.winModal.style.display = 'none';
+    }
   }
 
   async init() {
@@ -96,10 +128,9 @@ export class Game {
     if (!this.gameWon && !this.animation.isMoving) {
       if (this.objects.isOnWinTarget()) {
         this.gameWon = true;
-        // Показываем сообщение о победе
-        setTimeout(() => {
-          alert("Вы выиграли!");
-        }, 100);
+
+        // Показываем модальное окно вместо alert
+        this.showWinModal();
 
         console.log("Победа! Куб достиг целевой клетки.");
       }

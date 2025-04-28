@@ -1,5 +1,7 @@
 import * as THREE from "three";
-import { OBJECTS_CONFIG, LIGHT_CONFIG } from "./config.js";
+import { OBJECTS_CONFIG } from "./config.js";
+import { ObstaclesManager } from "./obstacles.js";
+import { SceneLighting } from "./lighting.js";
 
 /**
  * Класс для создания и управления объектами на сцене
@@ -15,6 +17,12 @@ export class SceneObjects {
     this.cubeBody = null;
     this.winTarget = null;
 
+    // Создаем менеджер препятствий
+    this.obstaclesManager = new ObstaclesManager(scene, physics, settings);
+
+    // Создаем менеджер освещения
+    this.lighting = new SceneLighting(scene);
+
     this.gridOffset = settings.gridOffset;
   }
 
@@ -23,6 +31,30 @@ export class SceneObjects {
     this.createWinTarget();
     this.createCube();
     this.addLight();
+
+    // Добавляем одно препятствие на поле
+    this.addObstacle(2, -2);
+  }
+
+  /**
+   * Добавляет препятствие на указанную позицию
+   */
+  addObstacle(x, z) {
+    return this.obstaclesManager.createObstacle(x, z);
+  }
+
+  /**
+   * Добавляет препятствие на случайную позицию
+   */
+  addRandomObstacle() {
+    return this.obstaclesManager.addRandomObstacle();
+  }
+
+  /**
+   * Проверяет, свободна ли позиция (нет препятствий)
+   */
+  isPositionFree(x, z) {
+    return this.obstaclesManager.isPositionFree(x, z);
   }
 
   createGround() {
@@ -118,38 +150,12 @@ export class SceneObjects {
     }
   }
 
+  /**
+   * Настраивает освещение сцены
+   */
   addLight() {
-    const { directional, ambient } = LIGHT_CONFIG;
-
-    // Добавляем направленный свет
-    const directionalLight = new THREE.DirectionalLight(
-      directional.color,
-      directional.intensity
-    );
-    directionalLight.position.set(
-      directional.position.x,
-      directional.position.y,
-      directional.position.z
-    );
-    directionalLight.castShadow = true;
-    directionalLight.shadow.mapSize.width = directional.shadowMapSize;
-    directionalLight.shadow.mapSize.height = directional.shadowMapSize;
-
-    // Настройка области теней
-    const d = directional.shadowArea;
-    directionalLight.shadow.camera.left = -d;
-    directionalLight.shadow.camera.right = d;
-    directionalLight.shadow.camera.top = d;
-    directionalLight.shadow.camera.bottom = -d;
-
-    this.scene.add(directionalLight);
-
-    // Амбиентный свет для подсветки теней
-    const ambientLight = new THREE.AmbientLight(
-      ambient.color,
-      ambient.intensity
-    );
-    this.scene.add(ambientLight);
+    // Используем менеджер освещения вместо прямого добавления света
+    this.lighting.setupLights();
   }
 
   addDebugMarkers() {

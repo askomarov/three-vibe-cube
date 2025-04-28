@@ -24,7 +24,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Добавляем возможность изменения позиции и сброса игры через глобальный объект
     window.gameApp = {
       setPosition: (x, z) => game.setPosition(x, z),
-      resetGame: () => game.resetGame()
+      resetGame: () => game.resetGame(),
+      showWinModal: () => game.showWinModal(),
+      hideWinModal: () => game.hideWinModal(),
+      // Новые методы для работы с препятствиями
+      addObstacle: (x, z) => game.objects.addObstacle(x, z),
+      addRandomObstacle: () => game.objects.addRandomObstacle()
     };
   } catch (error) {
     console.error("Ошибка при инициализации RAPIER:", error);
@@ -35,7 +40,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     window.gameApp = {
       setPosition: (x, z) => game.setPosition(x, z),
-      resetGame: () => game.resetGame()
+      resetGame: () => game.resetGame(),
+      showWinModal: () => game.showWinModal(),
+      hideWinModal: () => game.hideWinModal(),
+      // Новые методы для работы с препятствиями
+      addObstacle: (x, z) => game.objects.addObstacle(x, z),
+      addRandomObstacle: () => game.objects.addRandomObstacle()
     };
   }
 });
